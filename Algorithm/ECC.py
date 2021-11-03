@@ -26,8 +26,10 @@ class ECC:
         encrypted = [m[i:block_length*4] for i in range(0, len(m), block_length*4)]
         decrypted = ""
         for block in encrypted:
-            left = ECCPoint().from_bytes(block[:block_length*2], block_length)
-            right = ECCPoint().from_bytes(block[block_length*2:], block_length)
+            left = ECCPoint()
+            left.from_bytes(block[:block_length*2], block_length)
+            right = ECCPoint()
+            right.from_bytes(block[block_length*2:], block_length)
 
             first = self.key.ec.multiply(self.key.pri, left)
             pm = self.key.ec.add(right, self.key.ec.inv(first))
@@ -36,9 +38,22 @@ class ECC:
 
 
 if __name__ == '__main__':
-    key = ECurve(1, 6, 11)
+    curve = ECurve(-1, 188, 751)
+    base = ECCPoint(1, 1)
+    curve.multiply(10, base)
 
-    p = ECCPoint(2, 4)
-    q = ECCPoint(5, 9)
+    key = ECKey(curve, base)
+    key.generate_key(10)
+    key.k = curve.generate_k()
+
+    message = b'halooo'
+    ecc = ECC(key)
+    enc = ecc.encrypt(message)
+    print(enc)
+    dec = ecc.decrypt(enc)
+    print(dec)
+
+
+
 
 

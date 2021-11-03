@@ -1,4 +1,4 @@
-from ECurve import *
+from Key.ECurve import *
 import json
 
 

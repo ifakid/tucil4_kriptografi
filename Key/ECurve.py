@@ -34,10 +34,10 @@ class ECurve:
     def kolbitz(self, m: int, k: int):
         if m >= 256 or m < 0:
             raise ValueError()
-        y2 = None
         b = 1
         while True:
             x = (m * k) + b
+            print(x)
             y2 = self.calc_y2(x)
             sq = math.sqrt(y2)
             if math.floor(sq) == sq:
@@ -76,14 +76,15 @@ class ECurve:
             m = (((3 * pow(p.x, 2) + self.a) % self.p) * pow(2 * p.y, -1, self.p)) % self.p
         else:
             m = (((q.y - p.y) % self.p) * pow(q.x - p.x, -1, self.p)) % self.p
-        print(m)
         new_x = (m ** 2 - p.x - q.x) % self.p
         new_y = (m * (p.x - new_x) - p.y) % self.p
         return ECCPoint(new_x, new_y)
 
     def multiply(self, n, p: ECCPoint):
         r = ECCPoint(p.x, p.y)
-        for _ in range(n - 1):
+        for i in range(n - 1):
+            if n <= 10:
+                print(r)
             r = self.add(r, p)
         return r
 
@@ -92,9 +93,11 @@ class ECurve:
 
 
 if __name__ == '__main__':
-    conf = ECurve()
-    conf.a = -1
-    conf.b = 188
-    conf.p = 751
-    conf.find_points()
-    print(len(conf.points))
+    curve = ECurve(-1, 188, 751)
+    base = ECCPoint(1, 1)
+    points = []
+    # y^2 = 673 (mod 751)
+    a = 224 ** 3
+    a -= 224
+    a += 188
+    print(math.sqrt(a))
