@@ -60,3 +60,7 @@ def toitent(p, q):
 
 def is_coprime(a, b):
     return math.gcd(a, b) == 1
+
+
+def lcm(x, y):
+    return (x*y)//math.gcd(x,y)

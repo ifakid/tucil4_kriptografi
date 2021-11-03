@@ -1,6 +1,6 @@
 import random
 from Util import prime
-import math
+import json
 
 
 class PaillierKey:
@@ -21,16 +21,53 @@ class PaillierKey:
             self.phi = prime.toitent(self.p, self.q)
             if prime.is_coprime(self.n, self.phi):
                 break
-        self.lam = math.lcm(self.p - 1, self.q - 1)
-        self.g = random.randrange(self.n ** 2)
+        self.lam = prime.lcm(self.p - 1, self.q - 1)
+        self.g = random.randint(1, self.n ** 2)
 
         self.mu = pow(self.L(pow(self.g, self.lam, self.n ** 2)), -1, self.n)
 
     def L(self, x):
-        return (x - 1) / self.n
+        return (x - 1) // self.n
 
-    def import_key(self, path):
-        pass
+    def export_public_key(self, path):
+        if path.split('.')[-1] != 'pub':
+            path += '.pub'
+        pub_key = {
+            'n': self.n,
+            'g': self.g
+        }
+        with open(path, 'w') as f:
+            json.dump(pub_key, f)
 
-    def export_key(self, path):
-        pass
+    def import_public_key(self, path):
+        if path.split('.')[-1] != 'pub':
+            raise ValueError('Invalid file extension!')
+        with open(path, 'r') as f:
+            pub_key = json.load(f)
+            self.n = pub_key['n']
+            self.g = pub_key['g']
+
+    def export_private_key(self, path):
+        if path.split('.')[-1] != 'pri':
+            path += '.pri'
+        pri_key = {
+            'lam': self.lam,
+            'mu': self.mu
+        }
+        with open(path, 'w') as f:
+            json.dump(pri_key, f)
+
+    def import_private_key(self, path):
+        if path.split('.')[-1] != 'pri':
+            raise ValueError('Invalid file extension!')
+        with open(path, 'r') as f:
+            pri_key = json.load(f)
+            self.lam = pri_key['lam']
+            self.mu = pri_key['mu']
+
+
+if __name__ == '__main__':
+    key = PaillierKey()
+    key.generate_key(128)
+    key.export_public_key('p128')
+    key.export_private_key('p128')

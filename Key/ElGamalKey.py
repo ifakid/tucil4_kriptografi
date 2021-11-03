@@ -1,5 +1,6 @@
 import random
 from Util import prime
+import json
 
 
 class ElGamalKey:
@@ -18,9 +19,47 @@ class ElGamalKey:
         self.g = random.randrange(self.p)
         self.y = pow(self.g, self.x, self.p)
 
-    def import_key(self, path):
-        pass
+    def export_public_key(self, path):
+        if path.split('.')[-1] != 'pub':
+            path += '.pub'
+        pub_key = {
+            'p': self.p,
+            'g': self.g,
+            'y': self.y
+        }
+        with open(path, 'w') as f:
+            json.dump(pub_key, f)
 
-    def export_key(self, path):
-        pass
+    def import_public_key(self, path):
+        if path.split('.')[-1] != 'pub':
+            raise ValueError('Invalid file extension!')
+        with open(path, 'r') as f:
+            pub_key = json.load(f)
+            self.p = pub_key['p']
+            self.g = pub_key['g']
+            self.y = pub_key['y']
 
+    def import_private_key(self, path):
+        if path.split('.')[-1] != 'pri':
+            raise ValueError('Invalid file extension!')
+        with open(path, 'r') as f:
+            pri_key = json.load(f)
+            self.p = pri_key['p']
+            self.x = pri_key['x']
+
+    def export_private_key(self, path):
+        if path.split('.')[-1] != 'pri':
+            path += '.pri'
+        pri_key = {
+            'p': self.p,
+            'x': self.x
+        }
+        with open(path, 'w') as f:
+            json.dump(pri_key, f)
+
+
+if __name__ == '__main__':
+    key = ElGamalKey()
+    key.generate_key(128)
+    key.export_private_key('eg128')
+    key.export_public_key('eg128')
