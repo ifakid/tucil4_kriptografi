@@ -1,5 +1,6 @@
 from Key.ElGamalKey import ElGamalKey
 import random
+from Util import padding
 
 
 class ElGamal:

@@ -477,7 +477,7 @@ class RSA_Dec(QtWidgets.QTabWidget):
                 decrypted = rsa.decrypt(message)
                 if self.rsa_dec_save_file_name.text():
                     file.write_file(self.rsa_dec_save_file_name.text(), decrypted)
-                self.rsa_dec_res_button.setPlainText(decrypted.decode(decoding='latin-1'))
+                # self.rsa_dec_res_button.setPlainText(decrypted.decode(decoding='latin-1'))
                 mb.setWindowTitle("Success")
                 mb.setText("File successfully decrypted")
                 mb.exec()
