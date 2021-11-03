@@ -63,4 +63,8 @@ def is_coprime(a, b):
 
 
 def lcm(x, y):
-    return (x*y)//math.gcd(x,y)
+    return (x*y)//math.gcd(x, y)
+
+
+if __name__ == '__main__':
+    print(lcm(6, 15))

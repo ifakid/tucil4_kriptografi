@@ -21,16 +21,16 @@ class Ui_Dialog(object):
         self.rsa_alg = QtWidgets.QTabWidget(Dialog)
         self.rsa_alg.setGeometry(QtCore.QRect(-4, -1, 411, 611))
         self.rsa_alg.setObjectName("rsa_alg")
-        # -----------------------------------------------------------------
+
         self.tab = RSA_UI()
         self.rsa_alg.addTab(self.tab, "")
-        # -----------------------------------------------------------------
+
         self.tab_2 = EG_UI()
         self.rsa_alg.addTab(self.tab_2, "")
-        # -----------------------------------------------------------------
+
         self.tab_3 = P_UI()
         self.rsa_alg.addTab(self.tab_3, "")
-        # -----------------------------------------------------------------
+
         self.retranslateUi(Dialog)
         self.rsa_alg.setCurrentIndex(0)
 

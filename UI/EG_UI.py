@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
-from Algorithm import ElGamal
-from Key import ElGamalKey
+from Algorithm.ElGamal import ElGamal
+from Key.ElGamalKey import ElGamalKey
+from Util import file
 
 
 class EG_UI(QtWidgets.QWidget):
@@ -60,6 +61,7 @@ class EG_Gen(QtWidgets.QTabWidget):
         self.eg_gen_button = QtWidgets.QPushButton(self)
         self.eg_gen_button.setGeometry(QtCore.QRect(170, 120, 75, 23))
         self.eg_gen_button.setObjectName("eg_gen_button")
+        self.eg_gen_button.clicked.connect(self.generate)
 
         self.label_8 = QtWidgets.QLabel(self)
         self.label_8.setGeometry(QtCore.QRect(10, 60, 91, 16))
@@ -68,11 +70,12 @@ class EG_Gen(QtWidgets.QTabWidget):
         self.eg_gen_dir_button = QtWidgets.QPushButton(self)
         self.eg_gen_dir_button.setGeometry(QtCore.QRect(10, 90, 111, 23))
         self.eg_gen_dir_button.setObjectName("eg_gen_dir_button")
+        self.eg_gen_dir_button.clicked.connect(self.get_dir)
 
         self.eg_gen_dir_name = QtWidgets.QLabel(self)
         self.eg_gen_dir_name.setGeometry(QtCore.QRect(130, 100, 261, 16))
         self.eg_gen_dir_name.setObjectName("eg_gen_dir_name")
-    
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
 
@@ -83,9 +86,48 @@ class EG_Gen(QtWidgets.QTabWidget):
         self.eg_gen_dir_button.setText(_translate("Dialog", "Choose directory"))
         self.eg_gen_dir_name.setText(_translate("Dialog", ""))
 
+    def generate(self):
+        m = QtWidgets.QMessageBox()
+        if not self.eg_gen_len_text.text():
+            m.setWindowTitle("Error")
+            m.setText("Please enter key length")
+            m.exec()
+        elif not self.eg_gen_file_text.text():
+            m.setWindowTitle("Error")
+            m.setText("Please enter file name")
+            m.exec()
+        elif not self.eg_gen_dir_name.text():
+            m.setWindowTitle("Error")
+            m.setText("Please choose directory")
+            m.exec()
+        else:
+            key = ElGamalKey()
+            try:
+                key_len = int(self.eg_gen_len_text.text())
+                if key_len % 8:
+                    raise ValueError()
+                key.generate_key(key_len)
+                path = self.eg_gen_dir_name.text() + '/' + self.eg_gen_file_text.text()
+                key.export_public_key(path)
+                key.export_private_key(path)
+
+                m.setWindowTitle("Success")
+                m.setText("Key has been successfully generated")
+                m.exec()
+            except:
+                m.setWindowTitle("Error")
+                m.setText("Please check the parameters")
+                m.exec()
+
+    def get_dir(self):
+        path = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a directory")
+        self.eg_gen_dir_name.setText(path)
+
 
 class EG_Enc(QtWidgets.QTabWidget):
     def __init__(self, *args):
+        self.key = None
+
         QtWidgets.QTabWidget.__init__(self, *args)
         self.setObjectName("tab_9")
 
@@ -104,6 +146,7 @@ class EG_Enc(QtWidgets.QTabWidget):
         self.eg_enc_key_file_button = QtWidgets.QPushButton(self)
         self.eg_enc_key_file_button.setGeometry(QtCore.QRect(80, 230, 81, 23))
         self.eg_enc_key_file_button.setObjectName("eg_enc_key_file_button")
+        self.eg_enc_key_file_button.clicked.connect(self.import_key)
 
         self.label_33 = QtWidgets.QLabel(self)
         self.label_33.setGeometry(QtCore.QRect(10, 90, 61, 16))
@@ -128,6 +171,7 @@ class EG_Enc(QtWidgets.QTabWidget):
         self.eg_enc_m_file_button = QtWidgets.QPushButton(self)
         self.eg_enc_m_file_button.setGeometry(QtCore.QRect(80, 360, 81, 23))
         self.eg_enc_m_file_button.setObjectName("eg_enc_m_file_button")
+        self.eg_enc_m_file_button.clicked.connect(self.message_file)
 
         self.label_36 = QtWidgets.QLabel(self)
         self.label_36.setGeometry(QtCore.QRect(10, 0, 47, 14))
@@ -150,10 +194,12 @@ class EG_Enc(QtWidgets.QTabWidget):
         self.eg_enc_save_file_button = QtWidgets.QPushButton(self)
         self.eg_enc_save_file_button.setGeometry(QtCore.QRect(80, 390, 81, 23))
         self.eg_enc_save_file_button.setObjectName("eg_enc_save_file_button")
+        self.eg_enc_save_file_button.clicked.connect(self.save_file)
 
         self.eg_enc_button = QtWidgets.QPushButton(self)
         self.eg_enc_button.setGeometry(QtCore.QRect(170, 420, 75, 23))
         self.eg_enc_button.setObjectName("eg_enc_button")
+        self.eg_enc_button.clicked.connect(self.encrypt)
 
         self.eg_enc_res_text = QtWidgets.QTextEdit(self)
         self.eg_enc_res_text.setGeometry(QtCore.QRect(80, 450, 301, 64))
@@ -182,7 +228,7 @@ class EG_Enc(QtWidgets.QTabWidget):
         self.eg_enc_save_file_name = QtWidgets.QLabel(self)
         self.eg_enc_save_file_name.setGeometry(QtCore.QRect(170, 400, 211, 16))
         self.eg_enc_save_file_name.setObjectName("eg_enc_save_file_name")
-    
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
 
@@ -204,9 +250,73 @@ class EG_Enc(QtWidgets.QTabWidget):
         self.eg_enc_m_file_name.setText(_translate("Dialog", ""))
         self.eg_enc_save_file_name.setText(_translate("Dialog", ""))
 
+    def import_key(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, "Select public key")[0]
+        if path:
+            self.key = ElGamalKey()
+            try:
+                self.key.import_public_key(path)
+                self.eg_enc_key_file_name.setText(path)
+                self.eg_enc_p_text.setText(str(self.key.p))
+                self.eg_enc_g_text.setText(str(self.key.g))
+                self.eg_enc_y_text.setText(str(self.key.y))
+            except ValueError:
+                self.key = None
+                self.mb.setWindowTitle("Error")
+                self.mb.setText("Invalid file")
+                self.mb.exec()
+
+    def message_file(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file')
+        self.eg_enc_m_file_name.setText(path[0])
+
+    def save_file(self):
+        path = QtWidgets.QFileDialog.getSaveFileName(self, 'Select file')
+        self.eg_enc_save_file_name.setText(path[0])
+
+    def encrypt(self):
+        mb = QtWidgets.QMessageBox()
+        if not self.key and not (self.eg_enc_p_text.toPlainText() and self.eg_enc_g_text.toPlainText() and
+                                 self.eg_enc_y_text.toPlainText()):
+            mb.setWindowTitle("Error")
+            mb.setText("Please enter key or load a .pub file")
+            mb.exec()
+        elif not (self.eg_enc_m_text.toPlainText() or self.eg_enc_m_file_name.text()):
+            mb.setWindowTitle("Error")
+            mb.setText("Please enter a message or load a file to encrypt")
+            mb.exec()
+        else:
+            try:
+                if not self.key:
+                    p = int(self.eg_enc_p_text.toPlainText())
+                    g = int(self.eg_enc_g_text.toPlainText())
+                    y = int(self.eg_enc_y_text.toPlainText())
+                    self.key = ElGamalKey()
+                    self.key.p = p
+                    self.key.g = g
+                    self.key.y = y
+                if self.eg_enc_m_text.toPlainText():
+                    message = self.eg_enc_m_text.toPlainText().encode()
+                else:
+                    m_path = self.eg_enc_m_file_name.text()
+                    message = file.load_file(m_path)
+                eg = ElGamal(self.key)
+                encrypted = eg.encrypt(message)
+                if self.eg_enc_save_file_name.text():
+                    file.write_file(self.eg_enc_save_file_name.text(), encrypted)
+                self.eg_enc_res_text.setPlainText(encrypted.decode(encoding='latin-1'))
+                mb.setWindowTitle("Success")
+                mb.setText("File successfully encrypted")
+                mb.exec()
+            except:
+                mb.setWindowTitle("Error")
+                mb.setText("Please check the parameters")
+                mb.exec()
+
 
 class EG_Dec(QtWidgets.QTabWidget):
     def __init__(self, *args):
+        self.key = None
         QtWidgets.QTabWidget.__init__(self, *args)
         self.setObjectName("tab_10")
 
@@ -221,10 +331,12 @@ class EG_Dec(QtWidgets.QTabWidget):
         self.eg_dec_m_file_text = QtWidgets.QPushButton(self)
         self.eg_dec_m_file_text.setGeometry(QtCore.QRect(80, 310, 81, 23))
         self.eg_dec_m_file_text.setObjectName("eg_dec_m_file_text")
+        self.eg_dec_m_file_text.clicked.connect(self.message_file)
 
         self.eg_dec_button = QtWidgets.QPushButton(self)
         self.eg_dec_button.setGeometry(QtCore.QRect(170, 370, 75, 23))
         self.eg_dec_button.setObjectName("eg_dec_button")
+        self.eg_dec_button.clicked.connect(self.decrypt)
 
         self.label_41 = QtWidgets.QLabel(self)
         self.label_41.setGeometry(QtCore.QRect(10, 10, 47, 14))
@@ -256,10 +368,12 @@ class EG_Dec(QtWidgets.QTabWidget):
         self.eg_dec_save_file_text = QtWidgets.QPushButton(self)
         self.eg_dec_save_file_text.setGeometry(QtCore.QRect(80, 340, 81, 23))
         self.eg_dec_save_file_text.setObjectName("eg_dec_save_file_text")
+        self.eg_dec_save_file_text.clicked.connect(self.save_file)
 
         self.eg_dec_key_file_button = QtWidgets.QPushButton(self)
         self.eg_dec_key_file_button.setGeometry(QtCore.QRect(80, 180, 81, 23))
         self.eg_dec_key_file_button.setObjectName("eg_dec_key_file_button")
+        self.eg_dec_key_file_button.clicked.connect(self.import_key)
 
         self.eg_dec_x_text = QtWidgets.QTextEdit(self)
         self.eg_dec_x_text.setGeometry(QtCore.QRect(80, 100, 301, 64))
@@ -307,7 +421,7 @@ class EG_Dec(QtWidgets.QTabWidget):
         self.eg_dec_save_file_name = QtWidgets.QLabel(self)
         self.eg_dec_save_file_name.setGeometry(QtCore.QRect(170, 350, 211, 16))
         self.eg_dec_save_file_name.setObjectName("eg_dec_save_file_name")
-    
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
 
@@ -327,3 +441,62 @@ class EG_Dec(QtWidgets.QTabWidget):
         self.eg_dec_key_file_name.setText(_translate("Dialog", ""))
         self.eg_dec_m_file_name.setText(_translate("Dialog", ""))
         self.eg_dec_save_file_name.setText(_translate("Dialog", ""))
+
+    def import_key(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, "Select private key")[0]
+        if path:
+            self.key = ElGamalKey()
+            try:
+                self.key.import_private_key(path)
+                self.eg_dec_key_file_name.setText(path)
+                self.eg_dec_p_text.setText(str(self.key.p))
+                self.eg_dec_x_text.setText(str(self.key.x))
+            except ValueError:
+                self.key = None
+                self.mb.setWindowTitle("Error")
+                self.mb.setText("Invalid file")
+                self.mb.exec()
+
+    def message_file(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file')
+        self.eg_dec_m_file_name.setText(path[0])
+
+    def save_file(self):
+        path = QtWidgets.QFileDialog.getSaveFileName(self, 'Select file')
+        self.eg_dec_save_file_name.setText(path[0])
+
+    def decrypt(self):
+        mb = QtWidgets.QMessageBox()
+        if not self.key and not(self.eg_dec_p_text.toPlainText() and self.eg_dec_x_text.toPlainText()):
+            mb.setWindowTitle("Error")
+            mb.setText("Please enter key or load a .pub file")
+            mb.exec()
+        elif not(self.eg_dec_m_text.toPlainText() or self.eg_dec_m_file_name.text()):
+            mb.setWindowTitle("Error")
+            mb.setText("Please enter a message or load a file to decrypt")
+            mb.exec()
+        else:
+            try:
+                if not self.key:
+                    p = int(self.eg_dec_p_text.toPlainText())
+                    x = int(self.eg_dec_x_text.toPlainText())
+                    self.key = ElGamalKey()
+                    self.key.p = p
+                    self.key.x = x
+                if self.eg_dec_m_text.toPlainText():
+                    message = self.eg_dec_m_text.toPlainText().encode()
+                else:
+                    m_path = self.eg_dec_m_file_name.text()
+                    message = file.load_file(m_path)
+                eg = ElGamal(self.key)
+                decrypted = eg.decrypt(message)
+                if self.eg_dec_save_file_name.text():
+                    file.write_file(self.eg_dec_save_file_name.text(), decrypted)
+                self.eg_dec_res_text.setPlainText(decrypted.decode(encoding='latin-1'))
+                mb.setWindowTitle("Success")
+                mb.setText("File successfully decrypted")
+                mb.exec()
+            except:
+                mb.setWindowTitle("Error")
+                mb.setText("Please check the parameters")
+                mb.exec()

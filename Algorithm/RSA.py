@@ -4,8 +4,9 @@ import random
 from Util import padding
 
 class RSA:
-    def __init__(self, key: RSAKey):
+    def __init__(self, key: RSAKey, min_pad=8):
         self.key = key
+        self.pad = min_pad
 
     def generate_key(self, key_length):
         self.key.generate_key(key_length)
@@ -13,10 +14,10 @@ class RSA:
     def encrypt(self, m: bytes):
         if not self.key.e or not self.key.n:
             raise ValueError('Key invalid')
-        if isinstance(m, str):
-            m = m.encode()
         total_size = math.ceil(self.key.n.bit_length() / 8)
-        chunk_size = total_size - 11  # total_size = 3 bytes flags + at least 8 bytes padding + message chunk
+        chunk_size = total_size - 3 - self.pad
+        if chunk_size <= 0:
+            raise ValueError()
         plain_chunks = [m[i:i+chunk_size] for i in range(0, len(m), chunk_size)]
         encrypted_chunks = []
 

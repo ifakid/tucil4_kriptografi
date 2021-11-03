@@ -9,7 +9,7 @@ def pkcs1_pad(data: bytes, block_size):
 
 
 def pkcs1_unpad(data: bytes):
-    if data[0] != b'\x00' or data[1] != b'\x02':
+    if data[0] != 0 or data[1] != 2:
         raise ValueError()
     return data.split(b'\x00', 2)[-1]
 

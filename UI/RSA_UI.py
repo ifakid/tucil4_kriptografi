@@ -109,11 +109,8 @@ class RSA_Gen(QtWidgets.QTabWidget):
                     raise ValueError()
                 key.generate_key(key_len)
                 path = self.rsa_gen_dir_name.text() + '/' + self.rsa_gen_file_text.text()
-                print(path)
                 key.export_public_key(path)
-                print("Public key exported")
                 key.export_private_key(path)
-                print("Private key exported")
 
                 m.setWindowTitle("Success")
                 m.setText("Key has been successfully generated")
@@ -284,8 +281,8 @@ class RSA_Enc(QtWidgets.QTabWidget):
         else:
             try:
                 if not self.key:
-                    e = int(self.rsa_enc_e_text.text())
-                    n = int(self.rsa_enc_n_text.text())
+                    e = int(self.rsa_enc_e_text.toPlainText())
+                    n = int(self.rsa_enc_n_text.toPlainText())
                     self.key = RSAKey.RSAKey()
                     self.key.e = e
                     self.key.n = n
@@ -434,7 +431,6 @@ class RSA_Dec(QtWidgets.QTabWidget):
                 self.rsa_dec_key_file_name.setText(path)
                 self.rsa_dec_d_text.setText(str(self.key.d))
                 self.rsa_dec_n_text.setText(str(self.key.n))
-                print("Key imported")
             except ValueError:
                 self.key = None
                 self.mb.setWindowTitle("Error")
@@ -461,7 +457,6 @@ class RSA_Dec(QtWidgets.QTabWidget):
             mb.exec()
         else:
             try:
-                print("try")
                 if not self.key:
                     d = int(self.rsa_dec_d_text.text())
                     n = int(self.rsa_dec_n_text.text())
@@ -477,7 +472,7 @@ class RSA_Dec(QtWidgets.QTabWidget):
                 decrypted = rsa.decrypt(message)
                 if self.rsa_dec_save_file_name.text():
                     file.write_file(self.rsa_dec_save_file_name.text(), decrypted)
-                # self.rsa_dec_res_button.setPlainText(decrypted.decode(decoding='latin-1'))
+                self.rsa_dec_res_button.setPlainText(decrypted.decode(encoding='latin-1'))
                 mb.setWindowTitle("Success")
                 mb.setText("File successfully decrypted")
                 mb.exec()
