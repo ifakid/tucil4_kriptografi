@@ -4,4 +4,7 @@ Requirements:
 - Python 3.8
 - PyQt5
 
-To use the application, run main.py
+To use the application, run 
+```
+python main.py
+```
