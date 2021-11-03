@@ -63,7 +63,8 @@ class PaillierKey:
             path += '.pri'
         pri_key = {
             'lam': self.lam,
-            'mu': self.mu
+            'mu': self.mu,
+            'n': self.n
         }
         with open(path, 'w') as f:
             json.dump(pri_key, f)
@@ -75,6 +76,7 @@ class PaillierKey:
             pri_key = json.load(f)
             self.lam = pri_key['lam']
             self.mu = pri_key['mu']
+            self.n = pri_key['n']
 
 
 if __name__ == '__main__':

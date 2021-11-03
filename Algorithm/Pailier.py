@@ -34,9 +34,10 @@ class Paillier:
         return c.to_bytes(block_length*2, byteorder='big')
 
     def decrypt(self, m: bytes):
-        if not (self.key.lam and self.key.mu):
+        if not (self.key.lam and self.key.mu and self.key.n):
             raise ValueError('Key invalid!')
         block_length = math.ceil(self.key.n.bit_length()/8)
+        print(f'block_length {block_length}')
         encrypted_blocks = [m[i:i + block_length*2] for i in range(0, len(m), block_length*2)]
         decrypted_blocks = []
         for block in encrypted_blocks:
